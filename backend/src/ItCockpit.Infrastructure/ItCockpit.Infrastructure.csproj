@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.11" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.11" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.11">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="8.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.1" />
+    <PackageReference Include="Google.Apis.Gmail.v1" Version="1.68.0.3427" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ItCockpit.Application\ItCockpit.Application.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Gmail sorgu kurulumu gibi iç detayların test edilebilmesi için. -->
+    <InternalsVisibleTo Include="ItCockpit.Tests" />
+  </ItemGroup>
+
+</Project>

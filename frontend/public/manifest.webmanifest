@@ -1,0 +1,30 @@
+{
+  "name": "IT Yönetim Paneli",
+  "short_name": "IT Paneli",
+  "description": "Mail tabanlı ticket takibi, atama, hatırlatma ve hibrit çalışma takvimi",
+  "start_url": "/manager/dashboard",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#F4F6F8",
+  "theme_color": "#1B4965",
+  "lang": "tr",
+  "dir": "ltr",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Özet kutusu",
+      "short_name": "Özet",
+      "description": "Küçük durum özeti",
+      "url": "/widget"
+    },
+    {
+      "name": "Ticket'lar",
+      "short_name": "Ticket'lar",
+      "url": "/manager/tickets"
+    }
+  ]
+}

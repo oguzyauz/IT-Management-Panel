@@ -1,0 +1,25 @@
+Message-Id: 198f31bb22dd0002
+Thread-Id: 198f31bb22dd0002
+From: ticket@menarini.com <ticket@menarini.com>
+To: Yilmaz, Ahmet <ayilmaz@menarini.com.tr>
+Subject: New Ticket n. I260802_000311 for Kaya, Zeynep about ERP TR - N/A - Priority: 1
+Date: Sun, 2 Aug 2026 at 08:12
+
+Dear colleagues,
+there is a new Ticket assigned to your Group for Kaya, Zeynep with the following description:
+
+Merhaba,
+Fatura kaydı sırasında sistem hata veriyor.
+
+Teşekkürler.
+
+Ticket priority: 2
+Ticket category: Incidents/TixHub Categories/Applications & Services - ERP TR
+External Reference: N/A
+Please take it in charge as soon as possible and please note that the ticket number is I260802_000312 .
+Kindest Regards
+Service Desk Menarini
+
+This is an automatic email, do not answer to it
+
+@OPERATION@='MAIL'@REQUEST_ID@='784777'

@@ -1,0 +1,47 @@
+Message-Id: 198f2c1a9b4d7e00
+Thread-Id: 198f2c1a9b4d7e00
+From: Keydal, Duygu <dkeydal@menarini.com.tr>
+To: Ozturk, Nazife <nozturk@menarini.com.tr>, Yilmaz, Ahmet <ayilmaz@menarini.com.tr>, Oz, Dilara <doz@menarini.com.tr>
+Subject: Fwd: New Ticket n. I260729_000144 for Turcan, Merve about ERP TR - N/A - Priority: 2
+Date: Thu, 30 Jul 2026 at 13:33
+
+---------- Forwarded message ---------
+From: ticket@menarini.com <ticket@menarini.com>
+Date: Wed, 29 Jul 2026 at 11:47
+Subject: New Ticket n. I260729_000144 for Turcan, Merve about ERP TR - N/A - Priority: 2
+To: Yilmaz, Ahmet <ayilmaz@menarini.com.tr>, Oz, Dilara <doz@menarini.com.tr>, Secginli, Ayberk <asecginli@menarini.com.tr>, Tufan, Beril <btufan@menarini.com.tr>, Keydal, Duygu <dkeydal@menarini.com.tr>
+
+Dear colleagues,
+there is a new Ticket assigned to your Group for Turcan, Merve with the following description:
+
+Merhaba,
+Aksel Ecza Deposu'na ait cari hesapta (1001299 no.lu cari) F1 belge türü ile gelen kayıtlar negatiftir.
+F1 belge türü kaydı negatif olamaz. (Fatura Kaydı)
+Kontrollerinizi rica ederim.
+
+Teşekkürler.
+
+Ticket priority: 2
+Ticket category: Incidents/TixHub Categories/Applications & Services - ERP TR
+External Reference: N/A
+Please take it in charge as soon as possible and please note that the ticket number is I260729_000144 .
+Click here <https://tixcore.menarini.com/autoconnect_mail.php?field1=5C0F051E590F056F1D&field2=&field4=%7B07ED9C68-6172-48EA-8A58-90912B0A283E%7D&field5=ViewDialog&field6=I260729_000144&field7=RFC_NUMBER> to see the request.
+Kindest Regards
+Service Desk Menarini
+
+This is an automatic email, do not answer to it
+STD INCIDENT Application V.1.0 - Request Completion - 10191508
+
+@OPERATION@='MAIL'@REQUEST_ID@='784090'
+
+--
+Duygu Keydal
+
+Uygulama ve BT İş Zekası Çözümleri Destek Uzmanı
+Application and IT Business Intelligence Solutions Support Specialist
+
+Menarini Sağlık ve İlaç Sanayi Ticaret A.Ş.
+Merkez: Maslak Ofis Binası (MOB) Maslak Mahallesi,
+Sümer Sokak, No: 4, Kat: 7-8 Sarıyer 34485 İstanbul
+T: +90 212 467 11 11 [1202]    M: +90 538 624 98 98
+www.menarini.com.tr

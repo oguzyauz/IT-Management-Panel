@@ -1,0 +1,28 @@
+Message-Id: 198f30aa11cc0001
+Thread-Id: 198f30aa11cc0001
+From: ticket@menarini.com <ticket@menarini.com>
+To: Yilmaz, Ahmet <ayilmaz@menarini.com.tr>, Oz, Dilara <doz@menarini.com.tr>
+Subject: New Ticket n. S260801_000210 for Demir, Ali Can about SAP BW - REQ-8842 - Priority: 3
+Date: Sat, 1 Aug 2026 at 09:05
+
+Dear colleagues,
+there is a new Ticket assigned to your Group for Demir, Ali Can with the following description:
+
+Merhaba,
+BW raporlarında Temmuz ayı satış verileri güncellenmiyor.
+Yükleme zincirinin kontrol edilmesini rica ederim.
+
+Teşekkürler.
+
+Ticket priority: 3
+Ticket category: Service Requests/TixHub Categories/Applications & Services - SAP BW
+External Reference: REQ-8842
+Please take it in charge as soon as possible and please note that the ticket number is S260801_000210 .
+Click here <https://tixcore.menarini.com/autoconnect_mail.php?field1=7A1B2C3D4E5F6071&field2=&field4=%7B11AA22BB-33CC-44DD-55EE-66FF77008899%7D&field5=ViewDialog&field6=S260801_000210&field7=RFC_NUMBER> to see the request.
+Kindest Regards
+Service Desk Menarini
+
+This is an automatic email, do not answer to it
+STD REQUEST Application V.1.0 - Request Completion - 10191509
+
+@OPERATION@='MAIL'@REQUEST_ID@='784512'

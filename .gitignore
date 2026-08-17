@@ -1,0 +1,39 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+
+# Frontend
+node_modules/
+dist/
+.vite/
+*.tsbuildinfo
+
+# Uygulama çıktıları
+logs/
+outbox/
+token-store/
+*.db
+*.db-wal
+*.db-shm
+
+# Yayınlama çıktıları (100+ MB, kaynaktan yeniden üretilir)
+paket/
+backend/src/ItCockpit.Api/wwwroot/
+
+# Sırlar — asla commit edilmez
+credentials.json
+*.pfx
+appsettings.*.local.json
+.env
+.env.local
+
+# Araç yerel ayarları
+.claude/settings.local.json
+
+# İşletim sistemi
+Thumbs.db
+desktop.ini
+.DS_Store
