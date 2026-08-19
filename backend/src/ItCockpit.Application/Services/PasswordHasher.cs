@@ -1,69 +1,40 @@
+using System;
 using System.Security.Cryptography;
 
 namespace ItCockpit.Application.Services;
 
-/// <summary>
-/// PBKDF2-HMAC-SHA256 ile parola özetleme.
-///
-/// Dışarıdan bir kimlik kütüphanesi eklemek yerine .NET'in kendi
-/// <see cref="Rfc2898DeriveBytes"/> uygulaması kullanılır: bağımlılık yok, algoritma
-/// bilinen ve denetlenebilir. Özet, doğrulama sırasında parametrelerin okunabilmesi için
-/// kendi kendini tanımlayan bir metin olarak saklanır:
-///
-/// <c>pbkdf2-sha256$&lt;iterations&gt;$&lt;base64 salt&gt;$&lt;base64 hash&gt;</c>
-///
-/// Yineleme sayısı özetin içinde durduğu için ileride artırılabilir; eski parolalar
-/// kendi sayılarıyla doğrulanmaya devam eder.
-/// </summary>
 public static class PasswordHasher
 {
-    private const string Prefix = "pbkdf2-sha256";
-    private const int SaltBytes = 16;
-    private const int HashBytes = 32;
+    private const int SaltSize = 16;
+    private const int KeySize = 32;
+    private const int Iterations = 100000;
+    private static readonly HashAlgorithmName _algorithm = HashAlgorithmName.SHA256;
+    private const char Delimiter = ';';
 
-    /// <summary>OWASP'ın PBKDF2-HMAC-SHA256 için önerdiği alt sınır (2023).</summary>
-    public const int DefaultIterations = 600_000;
-
-    public static string Hash(string password, int iterations = DefaultIterations)
+    public static string Hash(string password)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(password);
+        if (string.IsNullOrEmpty(password))
+            throw new ArgumentNullException(nameof(password));
 
-        var salt = RandomNumberGenerator.GetBytes(SaltBytes);
-        var hash = Derive(password, salt, iterations);
+        var salt = RandomNumberGenerator.GetBytes(SaltSize);
+        var hash = Rfc2898DeriveBytes.Pbkdf2(password, salt, Iterations, _algorithm, KeySize);
 
-        return $"{Prefix}${iterations}${Convert.ToBase64String(salt)}${Convert.ToBase64String(hash)}";
+        return string.Join(Delimiter, Convert.ToBase64String(salt), Convert.ToBase64String(hash));
     }
 
-    /// <summary>
-    /// Parolayı özetle karşılaştırır. Biçimi bozuk özetlerde istisna fırlatmaz, <c>false</c> döner —
-    /// elle düzenlenmiş bir veritabanı satırı girişi kilitlemeli, sunucuyu çökertmemeli.
-    /// </summary>
-    public static bool Verify(string password, string? storedHash)
+    public static bool Verify(string password, string? passwordHash)
     {
-        if (string.IsNullOrWhiteSpace(password) || string.IsNullOrWhiteSpace(storedHash))
+        if (string.IsNullOrEmpty(password) || string.IsNullOrEmpty(passwordHash))
             return false;
 
-        var parts = storedHash.Split('$');
-        if (parts.Length != 4 || parts[0] != Prefix) return false;
-        if (!int.TryParse(parts[1], out var iterations) || iterations <= 0) return false;
+        var parts = passwordHash.Split(Delimiter);
+        if (parts.Length != 2) return false;
 
-        byte[] salt, expected;
-        try
-        {
-            salt = Convert.FromBase64String(parts[2]);
-            expected = Convert.FromBase64String(parts[3]);
-        }
-        catch (FormatException)
-        {
-            return false;
-        }
+        var salt = Convert.FromBase64String(parts[0]);
+        var hash = Convert.FromBase64String(parts[1]);
 
-        var actual = Derive(password, salt, iterations, expected.Length);
+        var hashToVerify = Rfc2898DeriveBytes.Pbkdf2(password, salt, Iterations, _algorithm, KeySize);
 
-        // Sabit süreli karşılaştırma: erken çıkış, parolanın kaç karakterinin tuttuğunu sızdırır.
-        return CryptographicOperations.FixedTimeEquals(actual, expected);
+        return CryptographicOperations.FixedTimeEquals(hash, hashToVerify);
     }
-
-    private static byte[] Derive(string password, byte[] salt, int iterations, int length = HashBytes) =>
-        Rfc2898DeriveBytes.Pbkdf2(password, salt, iterations, HashAlgorithmName.SHA256, length);
 }

@@ -348,21 +348,11 @@ public sealed class AccountService
 
     // --- Yardımcılar ----------------------------------------------------------------------------
 
-    /// <summary>
-    /// Parola kuralları bilinçli olarak sadedir: uzunluk gerçek koruma sağlar, karmaşıklık
-    /// zorunlulukları kullanıcıyı tahmin edilebilir kalıplara iter.
-    /// </summary>
     public static void ValidatePassword(string? password)
     {
-        if (string.IsNullOrWhiteSpace(password) || password.Length < MinPasswordLength)
-            throw new DomainRuleException(
-                "WEAK_PASSWORD",
-                $"Parola en az {MinPasswordLength} karakter olmalı.");
-
-        if (password.Trim().Length != password.Length)
-            throw new DomainRuleException(
-                "WEAK_PASSWORD",
-                "Parola boşlukla başlayamaz veya bitemez.");
+        var (isValid, errorMessage) = UserRegistrationValidator.ValidatePassword(password ?? string.Empty);
+        if (!isValid)
+            throw new DomainRuleException("WEAK_PASSWORD", errorMessage);
     }
 
     /// <summary>
