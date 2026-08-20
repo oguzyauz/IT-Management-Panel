@@ -57,9 +57,13 @@ export function LoginPage() {
 
           {status?.needsInitialSetup && <InitialSetupForm suggestedEmail={status.adminEmail} />}
 
-          {status && !status.needsInitialSetup && status.authProvider === 'Local' && <PasswordForm />}
+          {status && !status.needsInitialSetup &&
+            (status.authProvider === 'Local' || status.authProvider === 'Ldap') &&
+            <PasswordForm />}
 
-          {status && !status.needsInitialSetup && status.authProvider !== 'Local' && <MockUserPicker />}
+          {status && !status.needsInitialSetup &&
+            status.authProvider !== 'Local' && status.authProvider !== 'Ldap' &&
+            <MockUserPicker />}
         </CardContent>
       </Card>
     </Box>

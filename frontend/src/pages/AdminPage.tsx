@@ -81,6 +81,7 @@ export function AdminPage() {
 function UsersTab() {
   const { data: users, isLoading, isError, error, refetch } = useManagedUsers();
   const setActive = useSetUserActive();
+  const { authProvider } = useAuth();
 
   const [createOpen, setCreateOpen] = useState(false);
   const [resetTarget, setResetTarget] = useState<ManagedUserDto | null>(null);
@@ -198,9 +199,11 @@ function UsersTab() {
                       </TableCell>
                       <TableCell align="right">
                         <Stack direction="row" spacing={1} justifyContent="flex-end">
-                          <Button size="small" onClick={() => setResetTarget(user)}>
-                            Parola sıfırla
-                          </Button>
+                          {authProvider !== 'Ldap' && (
+                            <Button size="small" onClick={() => setResetTarget(user)}>
+                              Parola sıfırla
+                            </Button>
+                          )}
                           <Button
                             size="small"
                             color={user.isActive ? 'warning' : 'primary'}
@@ -250,6 +253,8 @@ function CreateUserDialog({
   onCreated: (message: string) => void;
 }) {
   const create = useCreateUser();
+  const { authProvider } = useAuth();
+  const isLdap = authProvider === 'Ldap';
 
   const [email, setEmail] = useState('');
   const [displayName, setDisplayName] = useState('');
@@ -276,9 +281,11 @@ function CreateUserDialog({
         displayName,
         title: title || undefined,
         role,
-        initialPassword: password,
+        initialPassword: isLdap ? undefined : password,
       });
-      onCreated(`${displayName} eklendi. Başlangıç parolasını kendisine iletin.`);
+      onCreated(isLdap
+        ? `${displayName} eklendi. Active Directory parolasıyla giriş yapabilir.`
+        : `${displayName} eklendi. Başlangıç parolasını kendisine iletin.`);
       close();
     } catch (err) {
       setError(problemMessage(err));
@@ -290,10 +297,12 @@ function CreateUserDialog({
       <DialogTitle>Kullanıcı ekle</DialogTitle>
       <DialogContent dividers>
         <Stack spacing={2} sx={{ mt: 0.5 }}>
-          <Alert severity="info" sx={{ fontSize: 13 }}>
-            Belirlediğiniz parolayı kişiye iletin. İlk girişinde kendi parolasını belirlemesi
-            istenecek, böylece parolayı siz bilmemeye devam edersiniz.
-          </Alert>
+          {!isLdap && (
+            <Alert severity="info" sx={{ fontSize: 13 }}>
+              Belirlediğiniz parolayı kişiye iletin. İlk girişinde kendi parolasını belirlemesi
+              istenecek, böylece parolayı siz bilmemeye devam edersiniz.
+            </Alert>
+          )}
 
           {error && <Alert severity="error">{error}</Alert>}
 
@@ -322,14 +331,21 @@ function CreateUserDialog({
             <MenuItem value="MANAGER">Yönetici — tüm ticket'lar, atama, hatırlatma</MenuItem>
             <MenuItem value="ADMIN">Sistem yöneticisi — tüm yetkiler</MenuItem>
           </TextField>
-          <TextField
-            label="Başlangıç parolası"
-            size="small"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            helperText="En az 8 karakter"
-            required
-          />
+          {!isLdap ? (
+            <TextField
+              label="Başlangıç parolası"
+              size="small"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              helperText="En az 8 karakter"
+              required
+            />
+          ) : (
+            <Alert severity="info" sx={{ fontSize: 13 }}>
+              Active Directory kullanıcısı. Parola AD tarafından yönetilir;
+              bu panelden parola belirlenmez.
+            </Alert>
+          )}
         </Stack>
       </DialogContent>
       <DialogActions>
@@ -337,7 +353,7 @@ function CreateUserDialog({
         <Button
           variant="contained"
           onClick={() => void submit()}
-          disabled={!email || !displayName || password.length < 8 || create.isPending}
+          disabled={!email || !displayName || (!isLdap && password.length < 8) || create.isPending}
         >
           {create.isPending ? 'Ekleniyor…' : 'Ekle'}
         </Button>

@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useMemo, useState } from 'react
 import type { ReactNode } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { api, TOKEN_STORAGE_KEY } from '../api/client';
-import { useMe } from '../api/hooks';
+import { useMe, useSetupStatus } from '../api/hooks';
 import type { CurrentUserDto } from '../api/types';
 
 interface AuthContextValue {
@@ -13,6 +13,7 @@ interface AuthContextValue {
   isEmployee: boolean;
   /** Yönetici geçici parola verdi; kullanıcı değiştirmeden panele giremez. */
   mustChangePassword: boolean;
+  authProvider: string;
   login: (token: string) => void;
   logout: () => void;
 }
@@ -24,6 +25,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(() => localStorage.getItem(TOKEN_STORAGE_KEY));
 
   const { data, isLoading, isError } = useMe(Boolean(token));
+
+  const { data: setupStatus } = useSetupStatus();
 
   const login = useCallback(
     (newToken: string) => {
@@ -55,10 +58,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isManager: roles.includes('MANAGER') || roles.includes('ADMIN'),
       isEmployee: roles.includes('EMPLOYEE'),
       mustChangePassword: user?.mustChangePassword ?? false,
+      authProvider: setupStatus?.authProvider ?? 'Local',
       login,
       logout,
     };
-  }, [data, isError, isLoading, login, logout, token]);
+  }, [data, isError, isLoading, login, logout, token, setupStatus]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

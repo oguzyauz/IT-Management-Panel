@@ -64,10 +64,12 @@ builder.Services.AddSwaggerGen(o =>
 // --- Kimlik doğrulama ---------------------------------------------------------------------------
 var isGoogleAuth = string.Equals(authOptions.Provider, "Google", StringComparison.OrdinalIgnoreCase);
 var isLocalAuth = string.Equals(authOptions.Provider, "Local", StringComparison.OrdinalIgnoreCase);
+var isLdapAuth = string.Equals(authOptions.Provider, "Ldap", StringComparison.OrdinalIgnoreCase);
 
-if (isLocalAuth)
+if (isLocalAuth || isLdapAuth)
 {
-    // Parola ile giriş: hesaplar bu veritabanında, oturumlar UserSessions tablosunda.
+    // Parola ile giriş (Local) veya LDAP doğrulaması (Ldap). Her iki modda da oturumlar
+    // UserSessions tablosunda tutulur ve sonraki isteklerde aynı handler ile kontrol edilir.
     builder.Services.AddAuthentication(AuthSchemes.Local)
         .AddScheme<AuthenticationSchemeOptions, LocalAuthenticationHandler>(AuthSchemes.Local, _ => { });
 }

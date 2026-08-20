@@ -61,7 +61,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const { user, isManager, logout } = useAuth();
+  const { user, isManager, logout, authProvider } = useAuth();
   const location = useLocation();
 
   const items = isManager ? [...managerNav, ...employeeNav] : employeeNav;
@@ -149,16 +149,18 @@ export function AppShell({ children }: { children: ReactNode }) {
                   </Stack>
                 </MenuItem>
                 <Divider />
-                <MenuItem
-                  component={NavLink}
-                  to="/parola-degistir"
-                  onClick={() => setAnchorEl(null)}
-                >
-                  <ListItemIcon>
-                    <PasswordIcon fontSize="small" />
-                  </ListItemIcon>
-                  Parola değiştir
-                </MenuItem>
+                {authProvider !== 'Ldap' && (
+                  <MenuItem
+                    component={NavLink}
+                    to="/parola-degistir"
+                    onClick={() => setAnchorEl(null)}
+                  >
+                    <ListItemIcon>
+                      <PasswordIcon fontSize="small" />
+                    </ListItemIcon>
+                    Parola değiştir
+                  </MenuItem>
+                )}
                 <MenuItem
                   onClick={() => {
                     setAnchorEl(null);

@@ -146,6 +146,77 @@ public sealed class AccountService
     }
 
     /// <summary>
+    /// LDAP/AD ile doğrulama. E-postaya karşılık gelen kullanıcı DB'de aktif ve
+    /// rolü tanımlı olmalıdır; yoksa giriş reddedilir. Parola doğrulama işlemi
+    /// ILdapAuthenticator soyutlaması üzerinden yapılır.
+    /// </summary>
+    public async Task<LoginResponse> LoginWithLdapAsync(
+        LoginRequest request, ILdapAuthenticator ldap, CancellationToken ct = default)
+    {
+        var email = NormalizeEmail(request.Email);
+        var now = _clock.UtcNow;
+
+        var user = await _db.Users
+            .Include(u => u.Team)
+            .Include(u => u.UserRoles).ThenInclude(ur => ur.Role)
+            .FirstOrDefaultAsync(u => u.Email == email, ct);
+
+        if (user is null || !user.IsActive || !user.UserRoles.Any())
+            throw new DomainRuleException("INVALID_CREDENTIALS",
+                "E-posta veya parola hatalı.");
+
+        // Hesap kilidi kontrolü (brute force koruması)
+        if (user.LockedUntilUtc is { } until && until > now)
+        {
+            var minutes = Math.Max(1, (int)Math.Ceiling((until - now).TotalMinutes));
+            throw new DomainRuleException(
+                "ACCOUNT_LOCKED",
+                $"Çok fazla hatalı deneme yapıldı. {minutes} dakika sonra tekrar deneyin.");
+        }
+
+        // LDAP Bind ile parola doğrulama
+        var ldapResult = await ldap.AuthenticateAsync(email, request.Password, ct);
+        if (!ldapResult.Success)
+        {
+            user.FailedLoginCount++;
+
+            if (user.FailedLoginCount >= MaxFailedAttempts)
+            {
+                user.LockedUntilUtc = now.Add(LockoutDuration);
+                user.FailedLoginCount = 0;
+            }
+
+            user.UpdatedAtUtc = now;
+            await _db.SaveChangesAsync(ct);
+
+            throw new DomainRuleException("INVALID_CREDENTIALS",
+                "E-posta veya parola hatalı.");
+        }
+
+        // AD'den gelen DisplayName ile DB senkronizasyonu
+        if (ldapResult.DisplayName is not null && user.DisplayName != ldapResult.DisplayName)
+            user.DisplayName = ldapResult.DisplayName;
+
+        // Başarılı giriş — session oluştur
+        user.FailedLoginCount = 0;
+        user.LockedUntilUtc = null;
+        user.LastLoginAtUtc = now;
+        user.UpdatedAtUtc = now;
+
+        var (token, session) = CreateSession(user.Id, now);
+        _db.UserSessions.Add(session);
+
+        await _db.SaveChangesAsync(ct);
+        await _audit.LogAsync("LOGIN_LDAP", "User", user.Id.ToString(), null, ct);
+
+        return new LoginResponse(
+            token,
+            session.ExpiresAtUtc,
+            ToDto(user),
+            false);
+    }
+
+    /// <summary>
     /// Token'ı doğrular ve oturumun sahibini döner. Süresi geçmiş, iptal edilmiş veya
     /// sahibi pasifleştirilmiş oturumlar kabul edilmez.
     /// </summary>
@@ -261,7 +332,8 @@ public sealed class AccountService
             throw new DomainRuleException("DUPLICATE_EMAIL", "Bu e-posta adresi zaten kayıtlı.");
 
         var role = NormalizeRole(request.Role);
-        ValidatePassword(request.InitialPassword);
+        if (request.InitialPassword is not null)
+            ValidatePassword(request.InitialPassword);
 
         var now = _clock.UtcNow;
 
@@ -271,8 +343,10 @@ public sealed class AccountService
             DisplayName = request.DisplayName.Trim(),
             Title = string.IsNullOrWhiteSpace(request.Title) ? null : request.Title.Trim(),
             IsActive = true,
-            PasswordHash = PasswordHasher.Hash(request.InitialPassword),
-            MustChangePassword = true,
+            PasswordHash = request.InitialPassword is not null
+                ? PasswordHasher.Hash(request.InitialPassword)
+                : null,
+            MustChangePassword = request.InitialPassword is not null,
             PasswordChangedAtUtc = now,
             CreatedAtUtc = now,
             UpdatedAtUtc = now

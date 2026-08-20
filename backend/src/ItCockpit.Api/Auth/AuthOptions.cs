@@ -6,7 +6,8 @@ public sealed class AuthOptions
 
     /// <summary>
     /// <c>Local</c> (parola ile giriş — son kullanıcı kurulumlarının varsayılanı),
-    /// <c>Mock</c> (geliştirme ve testler) veya <c>Google</c> (şirket SSO'su).
+    /// <c>Mock</c> (geliştirme ve testler), <c>Google</c> (şirket SSO'su) veya
+    /// <c>Ldap</c> (Active Directory doğrulaması).
     /// </summary>
     public string Provider { get; set; } = "Mock";
 
@@ -23,4 +24,5 @@ public static class AuthSchemes
 {
     public const string Mock = "Mock";
     public const string Local = "Local";
+    public const string Ldap = "Ldap";
 }

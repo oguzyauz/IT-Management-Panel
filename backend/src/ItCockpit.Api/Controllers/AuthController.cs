@@ -1,4 +1,5 @@
 using ItCockpit.Api.Auth;
+using ItCockpit.Application.Abstractions;
 using ItCockpit.Application.Contracts;
 using ItCockpit.Application.Services;
 using ItCockpit.Infrastructure.Persistence;
@@ -16,12 +17,14 @@ public sealed class AuthController : ControllerBase
     private readonly AppDbContext _db;
     private readonly AuthOptions _options;
     private readonly AccountService _accounts;
+    private readonly ILdapAuthenticator _ldap;
 
-    public AuthController(AppDbContext db, IOptions<AuthOptions> options, AccountService accounts)
+    public AuthController(AppDbContext db, IOptions<AuthOptions> options, AccountService accounts, ILdapAuthenticator ldap)
     {
         _db = db;
         _options = options.Value;
         _accounts = accounts;
+        _ldap = ldap;
     }
 
     /// <summary>
@@ -50,7 +53,7 @@ public sealed class AuthController : ControllerBase
         return Ok(new SetupStatusDto(needsSetup, adminEmail, _options.Provider));
     }
 
-    /// <summary>İlk açılışta yönetici parolasının belirlenmesi. Kurulum tamamlanınca kapanır.</summary>
+    /// <summary>İlk açılışta yönetici parolasının belirlenmesi. Kurulum tamamlanınca kapanır. Yalnızca Local modda geçerlidir.</summary>
     [HttpPost("initial-setup")]
     [AllowAnonymous]
     public async Task<ActionResult<UserDto>> InitialSetup([FromBody] InitialSetupRequest request, CancellationToken ct)
@@ -65,10 +68,13 @@ public sealed class AuthController : ControllerBase
     [AllowAnonymous]
     public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest request, CancellationToken ct)
     {
-        if (!IsLocalProvider())
-            return NotFound(new { message = "Parola ile giriş etkin değil." });
+        if (IsLdapProvider())
+            return Ok(await _accounts.LoginWithLdapAsync(request, _ldap, ct));
 
-        return Ok(await _accounts.LoginAsync(request, ct));
+        if (IsLocalProvider())
+            return Ok(await _accounts.LoginAsync(request, ct));
+
+        return NotFound(new { message = "Parola ile giriş etkin değil." });
     }
 
     [HttpPost("logout")]
@@ -85,6 +91,9 @@ public sealed class AuthController : ControllerBase
     [Authorize]
     public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request, CancellationToken ct)
     {
+        if (IsLdapProvider())
+            return BadRequest(new { message = "Active Directory kullanıcıları parolalarını bu panelden değiştiremez." });
+
         var idClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
         if (!Guid.TryParse(idClaim, out var userId)) return Unauthorized();
 
@@ -104,6 +113,9 @@ public sealed class AuthController : ControllerBase
 
     private bool IsLocalProvider() =>
         string.Equals(_options.Provider, "Local", StringComparison.OrdinalIgnoreCase);
+
+    private bool IsLdapProvider() =>
+        string.Equals(_options.Provider, "Ldap", StringComparison.OrdinalIgnoreCase);
 
     /// <summary>Geliştirmede giriş ekranında listelenecek kullanıcılar.</summary>
     [HttpGet("mock-users")]

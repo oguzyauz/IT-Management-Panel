@@ -3,6 +3,7 @@ using ItCockpit.Application.Parsing;
 using ItCockpit.Application.Services;
 using ItCockpit.Infrastructure.Gmail;
 using ItCockpit.Infrastructure.Jobs;
+using ItCockpit.Infrastructure.Ldap;
 using ItCockpit.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -69,6 +70,10 @@ public static class DependencyInjection
 
         services.AddScoped<GmailIngestionJob>();
         services.AddScoped<DatabaseSeeder>();
+
+        // LDAP ayarları ve sağlayıcısı
+        services.Configure<LdapOptions>(config.GetSection("Ldap"));
+        services.AddScoped<ILdapAuthenticator, LdapAuthenticator>();
 
         return services;
     }

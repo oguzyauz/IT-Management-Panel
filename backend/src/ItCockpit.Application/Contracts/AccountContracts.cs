@@ -36,7 +36,7 @@ public sealed record CreateUserRequest(
     string DisplayName,
     string? Title,
     string Role,
-    string InitialPassword);
+    string? InitialPassword);
 
 public sealed record ResetPasswordRequest(string NewPassword);
 
