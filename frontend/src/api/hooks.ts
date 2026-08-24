@@ -7,6 +7,10 @@ import type {
   DashboardDto,
   GmailSetupStatus,
   GmailSyncStateDto,
+  LeaveCalendarItemDto,
+  LeaveRequestDto,
+  LeaveStatus,
+  LeaveType,
   LoginResponse,
   ManagedUserDto,
   SetupStatusDto,
@@ -14,6 +18,7 @@ import type {
   MyWeekDto,
   PagedResult,
   ParseWarningDto,
+  ReminderHistoryFilters,
   ReminderHistoryItemDto,
   ReminderPreviewDto,
   ReminderTemplateDto,
@@ -37,8 +42,13 @@ export const queryKeys = {
   myWeek: (weekStart?: string) => ['my-week', weekStart ?? 'default'] as const,
   teamMatrix: (weekStart?: string) => ['team-matrix', weekStart ?? 'current'] as const,
   today: ['schedule-today'] as const,
-  reminderHistory: ['reminder-history'] as const,
+  reminderHistory: (filters?: ReminderHistoryFilters) =>
+    ['reminder-history', filters ?? {}] as const,
   reminderTemplates: ['reminder-templates'] as const,
+  leaveCalendar: (startDate: string, endDate: string) =>
+    ['leave-calendar', startDate, endDate] as const,
+  myLeaves: ['my-leaves'] as const,
+  allLeaves: (params?: unknown) => ['all-leaves', params ?? {}] as const,
 };
 
 // --- Kullanıcı --------------------------------------------------------------------------------
@@ -440,14 +450,94 @@ export const useSendReminder = () => {
       confirmed: boolean;
     }) => (await api.post<ReminderHistoryItemDto>('/reminders/send', vars)).data,
     onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: queryKeys.reminderHistory });
+      void qc.invalidateQueries({ queryKey: ['reminder-history'] });
       void qc.invalidateQueries({ queryKey: queryKeys.dashboard });
     },
   });
 };
 
-export const useReminderHistory = () =>
+export const useReminderHistory = (filters?: ReminderHistoryFilters) =>
   useQuery({
-    queryKey: queryKeys.reminderHistory,
-    queryFn: async () => (await api.get<ReminderHistoryItemDto[]>('/reminders/history')).data,
+    queryKey: queryKeys.reminderHistory(filters),
+    queryFn: async () =>
+      (
+        await api.get<ReminderHistoryItemDto[]>('/reminders/history', {
+          params: filters,
+        })
+      ).data,
   });
+
+// --- İzin Yönetimi ---------------------------------------------------------------------------
+
+export const useLeaveCalendar = (startDate: string, endDate: string) =>
+  useQuery({
+    queryKey: queryKeys.leaveCalendar(startDate, endDate),
+    queryFn: async () =>
+      (await api.get<LeaveCalendarItemDto[]>('/leaves/calendar', { params: { startDate, endDate } })).data,
+    enabled: Boolean(startDate && endDate),
+  });
+
+export const useMyLeaves = () =>
+  useQuery({
+    queryKey: queryKeys.myLeaves,
+    queryFn: async () => (await api.get<LeaveRequestDto[]>('/leaves/my')).data,
+  });
+
+export interface LeaveListFilters {
+  startDate?: string;
+  endDate?: string;
+  status?: LeaveStatus;
+}
+
+export const useAllLeaves = (filters?: LeaveListFilters) =>
+  useQuery({
+    queryKey: queryKeys.allLeaves(filters),
+    queryFn: async () =>
+      (await api.get<LeaveRequestDto[]>('/leaves', { params: filters })).data,
+  });
+
+export const useCreateLeave = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (vars: {
+      startDate: string;
+      endDate: string;
+      type: LeaveType;
+      description?: string;
+    }) => (await api.post<LeaveRequestDto>('/leaves', vars)).data,
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['leave-calendar'] });
+      void qc.invalidateQueries({ queryKey: queryKeys.myLeaves });
+      void qc.invalidateQueries({ queryKey: ['all-leaves'] });
+    },
+  });
+};
+
+export const useLeaveDecision = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (vars: { leaveId: string; decision: LeaveStatus; note?: string }) =>
+      (await api.post<LeaveRequestDto>(`/leaves/${vars.leaveId}/decision`, {
+        decision: vars.decision,
+        note: vars.note,
+      })).data,
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['leave-calendar'] });
+      void qc.invalidateQueries({ queryKey: ['all-leaves'] });
+      void qc.invalidateQueries({ queryKey: queryKeys.myLeaves });
+    },
+  });
+};
+
+export const useCancelLeave = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (leaveId: string) =>
+      (await api.post(`/leaves/${leaveId}/cancel`)).data,
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['leave-calendar'] });
+      void qc.invalidateQueries({ queryKey: queryKeys.myLeaves });
+      void qc.invalidateQueries({ queryKey: ['all-leaves'] });
+    },
+  });
+};

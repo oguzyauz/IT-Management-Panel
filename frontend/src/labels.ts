@@ -1,5 +1,7 @@
 import type {
   AgingLevel,
+  LeaveStatus,
+  LeaveType,
   ParseWarningSeverity,
   ReminderStatus,
   ScheduleStatus,
@@ -93,3 +95,25 @@ export function toIsoDate(date: Date): string {
   const day = String(date.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
 }
+
+export const leaveTypeLabels: Record<LeaveType, string> = {
+  Annual: 'Yıllık İzin',
+  Personal: 'Mazeret İzni',
+  Medical: 'Rapor / Hastalık',
+  Unpaid: 'Ücretsiz İzin',
+};
+
+export const leaveStatusLabels: Record<LeaveStatus, string> = {
+  Pending: 'Onay Bekliyor',
+  Approved: 'Onaylandı',
+  Rejected: 'Reddedildi',
+  Cancelled: 'İptal Edildi',
+};
+
+/** İzin türünün takvimde gösterileceği renk. */
+export const leaveTypeColors: Record<LeaveType, string> = {
+  Annual: '#2196f3',    // Mavi
+  Medical: '#f44336',   // Kırmızı
+  Personal: '#ff9800',  // Turuncu
+  Unpaid: '#9e9e9e',    // Gri
+};

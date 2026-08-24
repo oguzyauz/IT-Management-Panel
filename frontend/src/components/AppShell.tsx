@@ -29,6 +29,7 @@ import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined
 import NotificationsActiveOutlinedIcon from '@mui/icons-material/NotificationsActiveOutlined';
 import HistoryOutlinedIcon from '@mui/icons-material/HistoryOutlined';
 import EventAvailableOutlinedIcon from '@mui/icons-material/EventAvailableOutlined';
+import BeachAccessOutlinedIcon from '@mui/icons-material/BeachAccessOutlined';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import LogoutIcon from '@mui/icons-material/Logout';
 import PasswordIcon from '@mui/icons-material/Password';
@@ -46,6 +47,7 @@ const managerNav: NavItem[] = [
   { label: 'Dashboard', to: '/manager/dashboard', icon: <DashboardOutlinedIcon /> },
   { label: "Ticket'lar", to: '/manager/tickets', icon: <ConfirmationNumberOutlinedIcon /> },
   { label: 'Ekip takvimi', to: '/manager/team-schedule', icon: <CalendarMonthOutlinedIcon /> },
+  { label: 'İzin takvimi', to: '/manager/leaves', icon: <BeachAccessOutlinedIcon /> },
   { label: 'Hatırlatma gönder', to: '/manager/reminders', icon: <NotificationsActiveOutlinedIcon /> },
   { label: 'Hatırlatma geçmişi', to: '/manager/reminder-history', icon: <HistoryOutlinedIcon /> },
   { label: 'Yönetim', to: '/manager/admin', icon: <SettingsOutlinedIcon /> },
@@ -54,6 +56,7 @@ const managerNav: NavItem[] = [
 const employeeNav: NavItem[] = [
   { label: "Ticket'larım", to: '/employee/my-tickets', icon: <ConfirmationNumberOutlinedIcon /> },
   { label: 'Çalışma planım', to: '/employee/my-schedule', icon: <EventAvailableOutlinedIcon /> },
+  { label: 'İzinlerim', to: '/employee/my-leaves', icon: <BeachAccessOutlinedIcon /> },
 ];
 
 export function AppShell({ children }: { children: ReactNode }) {

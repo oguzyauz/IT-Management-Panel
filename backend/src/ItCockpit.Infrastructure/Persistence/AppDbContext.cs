@@ -30,6 +30,8 @@ public sealed class AppDbContext : DbContext, IAppDbContext
     public DbSet<ReminderTemplate> ReminderTemplates => Set<ReminderTemplate>();
     public DbSet<ReminderDelivery> ReminderDeliveries => Set<ReminderDelivery>();
 
+    public DbSet<LeaveRequest> LeaveRequests => Set<LeaveRequest>();
+
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
     public DbSet<AppSetting> AppSettings => Set<AppSetting>();
     public DbSet<GmailSyncState> GmailSyncStates => Set<GmailSyncState>();

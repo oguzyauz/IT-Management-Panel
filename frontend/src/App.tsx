@@ -16,6 +16,8 @@ import { MyTicketsPage } from './pages/MyTicketsPage';
 import { WidgetPage } from './pages/WidgetPage';
 import { AdminPage } from './pages/AdminPage';
 import { ChangePasswordPage } from './pages/ChangePasswordPage';
+import { LeavesPage } from './pages/LeavesPage';
+import { MyLeavesPage } from './pages/MyLeavesPage';
 
 function FullPageSpinner() {
   return (
@@ -117,6 +119,14 @@ export function App() {
           </RequireAuth>
         }
       />
+      <Route
+        path="/manager/leaves"
+        element={
+          <RequireAuth managerOnly>
+            <LeavesPage />
+          </RequireAuth>
+        }
+      />
 
       <Route
         path="/manager/admin"
@@ -150,6 +160,14 @@ export function App() {
         element={
           <RequireAuth>
             <MySchedulePage />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/employee/my-leaves"
+        element={
+          <RequireAuth>
+            <MyLeavesPage />
           </RequireAuth>
         }
       />

@@ -66,6 +66,7 @@ public static class DependencyInjection
         services.AddScoped<TicketService>();
         services.AddScoped<WorkScheduleService>();
         services.AddScoped<ReminderService>();
+        services.AddScoped<LeaveService>();
         services.AddScoped<DashboardService>();
 
         services.AddScoped<GmailIngestionJob>();

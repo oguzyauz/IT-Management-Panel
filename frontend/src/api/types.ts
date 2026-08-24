@@ -324,6 +324,14 @@ export interface ReminderHistoryItemDto {
   sentAtUtc?: string | null;
 }
 
+export interface ReminderHistoryFilters {
+  startDate?: string;
+  endDate?: string;
+  recipientUserId?: string;
+  status?: ReminderStatus;
+  take?: number;
+}
+
 export interface TeamStatusUpdateDto {
   ticketId: string;
   externalTicketNumber: string;
@@ -418,4 +426,37 @@ export interface IngestionRunResultDto {
   rejectReasons: string[];
   startedAtUtc: string;
   completedAtUtc: string;
+}
+
+// --- İzin Yönetimi ---------------------------------------------------------------------------
+
+export type LeaveType = 'Annual' | 'Personal' | 'Medical' | 'Unpaid';
+
+export type LeaveStatus = 'Pending' | 'Approved' | 'Rejected' | 'Cancelled';
+
+export interface LeaveRequestDto {
+  id: string;
+  userId: string;
+  userDisplayName: string;
+  startDate: string;
+  endDate: string;
+  dayCount: number;
+  type: LeaveType;
+  status: LeaveStatus;
+  description?: string | null;
+  reviewNote?: string | null;
+  reviewedByUserId?: string | null;
+  reviewedByName?: string | null;
+  reviewedAtUtc?: string | null;
+  createdAtUtc: string;
+}
+
+export interface LeaveCalendarItemDto {
+  id: string;
+  userId: string;
+  userDisplayName: string;
+  startDate: string;
+  endDate: string;
+  type: LeaveType;
+  status: LeaveStatus;
 }

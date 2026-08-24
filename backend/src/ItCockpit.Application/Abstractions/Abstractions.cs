@@ -108,6 +108,8 @@ public interface IAppDbContext
     DbSet<ReminderTemplate> ReminderTemplates { get; }
     DbSet<ReminderDelivery> ReminderDeliveries { get; }
 
+    DbSet<LeaveRequest> LeaveRequests { get; }
+
     DbSet<AuditLog> AuditLogs { get; }
     DbSet<AppSetting> AppSettings { get; }
     DbSet<GmailSyncState> GmailSyncStates { get; }

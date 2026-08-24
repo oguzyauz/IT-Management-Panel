@@ -339,6 +339,30 @@ public sealed class ReminderDeliveryConfiguration : IEntityTypeConfiguration<Rem
     }
 }
 
+public sealed class LeaveRequestConfiguration : IEntityTypeConfiguration<LeaveRequest>
+{
+    public void Configure(EntityTypeBuilder<LeaveRequest> b)
+    {
+        b.ToTable("LeaveRequests");
+        b.HasKey(x => x.Id);
+
+        b.Property(x => x.Type).HasConversion<string>().HasMaxLength(20).IsRequired();
+        b.Property(x => x.Status).HasConversion<string>().HasMaxLength(20).IsRequired();
+        b.Property(x => x.Description).HasMaxLength(1000);
+        b.Property(x => x.ReviewNote).HasMaxLength(1000);
+
+        b.HasIndex(x => new { x.UserId, x.StartDate });
+        b.HasIndex(x => x.Status);
+        b.HasIndex(x => new { x.StartDate, x.EndDate });
+
+        b.HasOne(x => x.User).WithMany()
+            .HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
+
+        b.HasOne(x => x.ReviewedByUser).WithMany()
+            .HasForeignKey(x => x.ReviewedByUserId).OnDelete(DeleteBehavior.NoAction);
+    }
+}
+
 public sealed class AuditLogConfiguration : IEntityTypeConfiguration<AuditLog>
 {
     public void Configure(EntityTypeBuilder<AuditLog> b)

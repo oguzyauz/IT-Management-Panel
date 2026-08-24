@@ -62,6 +62,28 @@ public enum WorkCalendarKind
     CompanyHoliday = 3
 }
 
+/// <summary>İzin türü.</summary>
+public enum LeaveType
+{
+    /// <summary>Yıllık izin.</summary>
+    Annual = 1,
+    /// <summary>Mazeret izni.</summary>
+    Personal = 2,
+    /// <summary>Hastalık / rapor.</summary>
+    Medical = 3,
+    /// <summary>Ücretsiz izin.</summary>
+    Unpaid = 4
+}
+
+/// <summary>İzin talebi durumu.</summary>
+public enum LeaveStatus
+{
+    Pending = 0,
+    Approved = 1,
+    Rejected = 2,
+    Cancelled = 3
+}
+
 public static class RoleCodes
 {
     public const string Admin = "ADMIN";
