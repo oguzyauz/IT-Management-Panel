@@ -22,6 +22,7 @@ import { useInitialSetup, useLogin, useMockUsers, useSetupStatus } from '../api/
 import { useAuth } from '../auth/AuthContext';
 import type { UserDto } from '../api/types';
 import { ErrorState, LoadingSkeleton } from '../components/States';
+import { hasPasswordError, passwordHelperText, validatePassword } from '../utils/passwordValidation';
 
 /** Rol kodlarından yönetici olup olmadığını çıkarır — birkaç yerde gerekiyor. */
 const isManagerRole = (roles: string[]) => roles.includes('MANAGER') || roles.includes('ADMIN');
@@ -129,7 +130,8 @@ function InitialSetupForm({ suggestedEmail }: { suggestedEmail?: string | null }
         size="small"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
-        helperText="En az 8 karakter"
+        error={password.length > 0 && hasPasswordError(validatePassword(password))}
+        helperText={passwordHelperText(password)}
         autoComplete="new-password"
       />
       <TextField
@@ -146,7 +148,7 @@ function InitialSetupForm({ suggestedEmail }: { suggestedEmail?: string | null }
       <Button
         variant="contained"
         size="large"
-        disabled={!email || password.length < 8 || mismatch || setup.isPending || login.isPending}
+        disabled={!email || hasPasswordError(validatePassword(password)) || mismatch || setup.isPending || login.isPending}
         onClick={() => void submit()}
       >
         {setup.isPending || login.isPending ? 'Kuruluyor…' : 'Kurulumu tamamla'}

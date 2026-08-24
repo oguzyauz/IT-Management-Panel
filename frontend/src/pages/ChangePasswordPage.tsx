@@ -13,6 +13,7 @@ import {
 import { useChangePassword } from '../api/hooks';
 import { useAuth } from '../auth/AuthContext';
 import { problemMessage } from '../api/client';
+import { hasPasswordError, passwordHelperText, validatePassword } from '../utils/passwordValidation';
 
 /**
  * Hem zorunlu parola değişimi (yönetici geçici parola verdiğinde) hem de kullanıcının
@@ -103,7 +104,8 @@ export function ChangePasswordPage() {
                   size="small"
                   value={next}
                   onChange={(e) => setNext(e.target.value)}
-                  helperText="En az 8 karakter"
+                  error={next.length > 0 && hasPasswordError(validatePassword(next))}
+                  helperText={passwordHelperText(next)}
                   autoComplete="new-password"
                 />
                 <TextField
@@ -119,7 +121,7 @@ export function ChangePasswordPage() {
 
                 <Button
                   variant="contained"
-                  disabled={!current || next.length < 8 || mismatch || change.isPending}
+                  disabled={!current || hasPasswordError(validatePassword(next)) || mismatch || change.isPending}
                   onClick={() => void submit()}
                 >
                   {change.isPending ? 'Değiştiriliyor…' : 'Parolayı değiştir'}

@@ -48,6 +48,7 @@ import type { ManagedUserDto } from '../api/types';
 import { problemMessage } from '../api/client';
 import { ErrorState, LoadingSkeleton } from '../components/States';
 import { formatDateTime } from '../labels';
+import { hasPasswordError, passwordHelperText, validatePassword } from '../utils/passwordValidation';
 
 type Feedback = { type: 'success' | 'error' | 'info'; message: string } | null;
 
@@ -337,7 +338,8 @@ function CreateUserDialog({
               size="small"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              helperText="En az 8 karakter"
+              error={password.length > 0 && hasPasswordError(validatePassword(password))}
+              helperText={passwordHelperText(password)}
               required
             />
           ) : (
@@ -353,7 +355,7 @@ function CreateUserDialog({
         <Button
           variant="contained"
           onClick={() => void submit()}
-          disabled={!email || !displayName || (!isLdap && password.length < 8) || create.isPending}
+          disabled={!email || !displayName || (!isLdap && hasPasswordError(validatePassword(password))) || create.isPending}
         >
           {create.isPending ? 'Ekleniyor…' : 'Ekle'}
         </Button>
@@ -413,13 +415,14 @@ function ResetPasswordDialog({
             size="small"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            helperText="En az 8 karakter"
+            error={password.length > 0 && hasPasswordError(validatePassword(password))}
+            helperText={passwordHelperText(password)}
           />
         </Stack>
       </DialogContent>
       <DialogActions>
         <Button onClick={close}>Vazgeç</Button>
-        <Button variant="contained" onClick={() => void submit()} disabled={password.length < 8 || reset.isPending}>
+        <Button variant="contained" onClick={() => void submit()} disabled={hasPasswordError(validatePassword(password)) || reset.isPending}>
           {reset.isPending ? 'Sıfırlanıyor…' : 'Sıfırla'}
         </Button>
       </DialogActions>

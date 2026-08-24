@@ -249,6 +249,12 @@ using (var scope = app.Services.CreateScope())
             GmailIngestionJob.RecurringJobId,
             job => job.ExecuteAsync(CancellationToken.None),
             $"*/{Math.Clamp(interval, 1, 59)} * * * *");
+
+        // Her gece 02:00 (UTC) — tamamlanmasının üzerinden 14 gün geçen biletleri arşivle.
+        sp.GetRequiredService<IRecurringJobManager>().AddOrUpdate<ArchiveTicketsJob>(
+            ArchiveTicketsJob.RecurringJobId,
+            job => job.ExecuteAsync(CancellationToken.None),
+            "0 2 * * *");
     }
 }
 
