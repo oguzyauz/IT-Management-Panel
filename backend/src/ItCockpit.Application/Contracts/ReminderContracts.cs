@@ -49,3 +49,14 @@ public sealed record ReminderHistoryItemDto(
 
 public sealed record ReminderTemplateDto(
     Guid Id, string Code, string Name, string SubjectTemplate, string BodyTemplate, bool IsDefault);
+
+/// <summary>
+/// Hatırlatma geçmişi filtre parametreleri.
+/// Tüm alanlar opsiyoneldir; belirtilmeyenler filtrelenmez.
+/// </summary>
+public sealed record ReminderHistoryQuery(
+    DateTime? StartDateUtc = null,
+    DateTime? EndDateUtc = null,
+    Guid? RecipientUserId = null,
+    ReminderStatus? Status = null,
+    int Take = 50);

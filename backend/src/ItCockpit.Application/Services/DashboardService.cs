@@ -105,7 +105,7 @@ public sealed class DashboardService
         .ToList();
 
         var matrix = await _schedule.GetTeamMatrixAsync(currentWeek, ct);
-        var recentReminders = await _reminders.GetHistoryAsync(SectionLimit, ct);
+        var recentReminders = await _reminders.GetHistoryAsync(new ReminderHistoryQuery(Take: SectionLimit), ct);
 
         var mismatchWarnings = await _db.TicketParseWarnings.AsNoTracking()
             .Include(w => w.Ticket)

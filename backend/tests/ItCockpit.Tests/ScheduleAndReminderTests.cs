@@ -344,6 +344,88 @@ public sealed class ReminderTests : IDisposable
         history[0].SentByName.Should().Be("Ahmet Yılmaz");
         history[0].TicketNumbers.Should().BeEquivalentTo(["I260729_000144"]);
     }
+
+    [Fact]
+    public async Task History_without_filters_returns_all()
+    {
+        var id = await AssignedTicketAsync();
+
+        await _h.Reminders.SendAsync(new ReminderSendCommand(
+            ServiceTestHarness.EmployeeId, [id], null, "Konu 1", "Gövde 1", null, Confirmed: true));
+        await _h.Reminders.SendAsync(new ReminderSendCommand(
+            ServiceTestHarness.EmployeeId, [id], null, "Konu 2", "Gövde 2", null, Confirmed: true));
+
+        var history = await _h.Reminders.GetHistoryAsync();
+
+        history.Should().HaveCount(2);
+    }
+
+    [Fact]
+    public async Task History_filters_by_date_range()
+    {
+        var id = await AssignedTicketAsync();
+
+        // Saati 1 Ağustos'a ayarla
+        _h.Clock.UtcNow = new DateTime(2026, 8, 1, 10, 0, 0, DateTimeKind.Utc);
+        await _h.Reminders.SendAsync(new ReminderSendCommand(
+            ServiceTestHarness.EmployeeId, [id], null, "Ağustos", "Gövde", null, Confirmed: true));
+
+        // Saati 15 Ağustos'a ayarla
+        _h.Clock.UtcNow = new DateTime(2026, 8, 15, 10, 0, 0, DateTimeKind.Utc);
+        await _h.Reminders.SendAsync(new ReminderSendCommand(
+            ServiceTestHarness.EmployeeId, [id], null, "Ağustos Ortası", "Gövde", null, Confirmed: true));
+
+        // Yalnızca 10 Ağustos sonrasını sorgula
+        var history = await _h.Reminders.GetHistoryAsync(
+            new ReminderHistoryQuery(StartDateUtc: new DateTime(2026, 8, 10)));
+
+        history.Should().ContainSingle()
+            .Which.Subject.Should().Be("Ağustos Ortası");
+    }
+
+    [Fact]
+    public async Task History_filters_by_recipient()
+    {
+        var id = await AssignedTicketAsync();
+
+        await _h.Reminders.SendAsync(new ReminderSendCommand(
+            ServiceTestHarness.EmployeeId, [id], null, "Konu", "Gövde", null, Confirmed: true));
+
+        // Var olmayan kullanıcıyla filtrele — sonuç boş olmalı
+        var history = await _h.Reminders.GetHistoryAsync(
+            new ReminderHistoryQuery(RecipientUserId: ServiceTestHarness.Employee2Id));
+
+        history.Should().BeEmpty();
+
+        // Doğru alıcıyla filtrele
+        var history2 = await _h.Reminders.GetHistoryAsync(
+            new ReminderHistoryQuery(RecipientUserId: ServiceTestHarness.EmployeeId));
+
+        history2.Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task History_filters_by_status()
+    {
+        var id = await AssignedTicketAsync();
+
+        // Başarılı gönderim
+        await _h.Reminders.SendAsync(new ReminderSendCommand(
+            ServiceTestHarness.EmployeeId, [id], null, "Başarılı", "Gövde", null, Confirmed: true));
+
+        // Başarısız gönderim
+        _h.MailSender.ShouldFail = true;
+        await _h.Reminders.SendAsync(new ReminderSendCommand(
+            ServiceTestHarness.EmployeeId, [id], null, "Hatalı", "Gövde", null, Confirmed: true));
+
+        var sent = await _h.Reminders.GetHistoryAsync(
+            new ReminderHistoryQuery(Status: ReminderStatus.Sent));
+        sent.Should().ContainSingle().Which.Subject.Should().Be("Başarılı");
+
+        var failed = await _h.Reminders.GetHistoryAsync(
+            new ReminderHistoryQuery(Status: ReminderStatus.Failed));
+        failed.Should().ContainSingle().Which.Subject.Should().Be("Hatalı");
+    }
 }
 
 public sealed class DashboardTests : IDisposable

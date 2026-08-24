@@ -36,6 +36,12 @@ public sealed class RemindersController : ControllerBase
 
     [HttpGet("history")]
     public async Task<ActionResult<IReadOnlyList<ReminderHistoryItemDto>>> History(
-        [FromQuery] int take = 50, CancellationToken ct = default) =>
-        Ok(await _reminders.GetHistoryAsync(take, ct));
+        [FromQuery] DateTime? startDate,
+        [FromQuery] DateTime? endDate,
+        [FromQuery] Guid? recipientUserId,
+        [FromQuery] ReminderStatus? status,
+        [FromQuery] int take = 50,
+        CancellationToken ct = default) =>
+        Ok(await _reminders.GetHistoryAsync(
+            new ReminderHistoryQuery(startDate, endDate, recipientUserId, status, take), ct));
 }

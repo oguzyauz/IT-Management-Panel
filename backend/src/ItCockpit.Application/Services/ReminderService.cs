@@ -183,13 +183,32 @@ public sealed class ReminderService
             delivery.ErrorMessage, delivery.CreatedAtUtc, delivery.SentAtUtc);
     }
 
-    public async Task<IReadOnlyList<ReminderHistoryItemDto>> GetHistoryAsync(int take = 50, CancellationToken ct = default)
+    public async Task<IReadOnlyList<ReminderHistoryItemDto>> GetHistoryAsync(
+        ReminderHistoryQuery? query = null, CancellationToken ct = default)
     {
-        var rows = await _db.ReminderDeliveries.AsNoTracking()
+        query ??= new ReminderHistoryQuery();
+        var take = Math.Clamp(query.Take, 1, 500);
+
+        var q = _db.ReminderDeliveries.AsNoTracking()
             .Include(r => r.RecipientUser)
             .Include(r => r.SentByUser)
+            .AsQueryable();
+
+        if (query.StartDateUtc is { } start)
+            q = q.Where(r => r.CreatedAtUtc >= start);
+
+        if (query.EndDateUtc is { } end)
+            q = q.Where(r => r.CreatedAtUtc < end.Date.AddDays(1));
+
+        if (query.RecipientUserId is { } recipientId)
+            q = q.Where(r => r.RecipientUserId == recipientId);
+
+        if (query.Status is { } status)
+            q = q.Where(r => r.Status == status);
+
+        var rows = await q
             .OrderByDescending(r => r.CreatedAtUtc)
-            .Take(Math.Clamp(take, 1, 200))
+            .Take(take)
             .ToListAsync(ct);
 
         var allTicketIds = rows
