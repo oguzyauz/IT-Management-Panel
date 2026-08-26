@@ -45,6 +45,7 @@ import {
   useUpdateAppSettings,
 } from '../api/hooks';
 import type { ManagedUserDto } from '../api/types';
+import { useAuth } from '../auth/AuthContext';
 import { problemMessage } from '../api/client';
 import { ErrorState, LoadingSkeleton } from '../components/States';
 import { formatDateTime } from '../labels';
@@ -282,7 +283,7 @@ function CreateUserDialog({
         displayName,
         title: title || undefined,
         role,
-        initialPassword: isLdap ? undefined : password,
+        initialPassword: isLdap ? '' : password,
       });
       onCreated(isLdap
         ? `${displayName} eklendi. Active Directory parolasıyla giriş yapabilir.`

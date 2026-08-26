@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
+using ItCockpit.Domain;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +24,12 @@ builder.Services.Configure<AuthOptions>(builder.Configuration.GetSection(AuthOpt
 var authOptions = builder.Configuration.GetSection(AuthOptions.SectionName).Get<AuthOptions>() ?? new AuthOptions();
 
 builder.Services.AddInfrastructure(builder.Configuration);
+
+// YENİ EKLEDİĞİMİZ SERVİS
+builder.Services.AddHttpClient<IPublicHolidayService, PublicHolidayService>(client =>
+{
+    client.DefaultRequestHeaders.Add("User-Agent", "ItCockpitApp/1.0");
+});
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUser, HttpCurrentUser>();
@@ -68,8 +75,6 @@ var isLdapAuth = string.Equals(authOptions.Provider, "Ldap", StringComparison.Or
 
 if (isLocalAuth || isLdapAuth)
 {
-    // Parola ile giriş (Local) veya LDAP doğrulaması (Ldap). Her iki modda da oturumlar
-    // UserSessions tablosunda tutulur ve sonraki isteklerde aynı handler ile kontrol edilir.
     builder.Services.AddAuthentication(AuthSchemes.Local)
         .AddScheme<AuthenticationSchemeOptions, LocalAuthenticationHandler>(AuthSchemes.Local, _ => { });
 }
@@ -85,7 +90,6 @@ else if (isGoogleAuth)
 
             options.Events = new Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerEvents
             {
-                // Şirket domain kısıtı: domain dışı hesaplar kabul edilmez.
                 OnTokenValidated = context =>
                 {
                     var email = context.Principal?.FindFirstValue(ClaimTypes.Email)
@@ -137,8 +141,6 @@ if (builder.Configuration.GetValue("Hangfire:EnableServer", true))
 
 var app = builder.Build();
 
-// İstek loglaması hata yöneticisinin DIŞINDA kalmalı ki loglanan durum kodu,
-// istemciye giden nihai kod olsun (iş kuralı ihlalleri 500 değil 400 görünür).
 app.UseSerilogRequestLogging();
 
 // --- Hata yönetimi ------------------------------------------------------------------------------
@@ -179,8 +181,6 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors(CorsPolicy);
 
-// Derlenmiş arayüz varsa API onu da sunar; böylece taşınabilir kurulumda ayrı bir
-// Node.js sunucusuna gerek kalmaz. Geliştirmede wwwroot boştur ve Vite kullanılır.
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
@@ -191,8 +191,6 @@ app.MapControllers();
 app.MapGet("/health", () => Results.Ok(new { status = "ok", utc = DateTime.UtcNow }))
    .AllowAnonymous();
 
-// SPA geri dönüşü: /manager/tickets gibi istemci tarafı rotalar doğrudan açıldığında
-// index.html döner. /api ve /swagger yolları bunun dışındadır.
 app.MapFallback(async context =>
 {
     var path = context.Request.Path.Value ?? string.Empty;
@@ -224,8 +222,6 @@ using (var scope = app.Services.CreateScope())
     {
         var db = sp.GetRequiredService<AppDbContext>();
 
-        // SQLite tarafında migration seti yoktur (taşınabilir kurulum senaryosu);
-        // şema doğrudan modelden oluşturulur.
         if (db.Database.IsSqlite())
             await db.Database.EnsureCreatedAsync();
         else
@@ -241,16 +237,11 @@ using (var scope = app.Services.CreateScope())
         var interval = await settings.GetIntAsync(
             ItCockpit.Domain.Entities.AppSettingKeys.GmailPollIntervalMinutes, 5);
 
-        // DI'dan alınan IRecurringJobManager kullanılır, statik RecurringJob DEĞİL.
-        // Statik API JobStorage.Current'a bakar; bu değer Hangfire sunucusu ayağa
-        // kalkmadan atanmadığı için uygulama açılışta "JobStorage instance has not been
-        // initialized" ile çöker.
         sp.GetRequiredService<IRecurringJobManager>().AddOrUpdate<GmailIngestionJob>(
             GmailIngestionJob.RecurringJobId,
             job => job.ExecuteAsync(CancellationToken.None),
             $"*/{Math.Clamp(interval, 1, 59)} * * * *");
 
-        // Her gece 02:00 (UTC) — tamamlanmasının üzerinden 14 gün geçen biletleri arşivle.
         sp.GetRequiredService<IRecurringJobManager>().AddOrUpdate<ArchiveTicketsJob>(
             ArchiveTicketsJob.RecurringJobId,
             job => job.ExecuteAsync(CancellationToken.None),
@@ -260,5 +251,4 @@ using (var scope = app.Services.CreateScope())
 
 app.Run();
 
-/// <summary>Integration testlerinin <c>WebApplicationFactory</c> ile erişebilmesi için.</summary>
 public partial class Program;
